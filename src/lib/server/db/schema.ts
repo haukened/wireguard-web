@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { sql } from 'drizzle-orm';
+import { sql, type InferSelectModel } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
 	id: integer('id', {mode: 'number'}).primaryKey({autoIncrement: true}),
@@ -10,3 +10,14 @@ export const users = sqliteTable('users', {
 	updated_at: integer('updated_at', {mode: 'timestamp'}).notNull().default(sql`CURRENT_TIMESTAMP`),
 	last_login: integer('last_login', {mode: 'timestamp'}),
 });
+
+export const sessions = sqliteTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: integer('user_id', {mode: 'number'})
+		.notNull()
+		.references(() => users.id),
+	expiresAt: integer('expires_at', {mode: 'timestamp'}).notNull(),
+});
+
+export type User = InferSelectModel<typeof users>;
+export type Session = InferSelectModel<typeof sessions>;
