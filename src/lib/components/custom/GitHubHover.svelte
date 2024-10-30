@@ -2,6 +2,7 @@
     import * as Avatar from '$lib/components/ui/avatar';
     import * as HoverCard from '$lib/components/ui/hover-card';
     import { Skeleton } from '$lib/components/ui/skeleton';
+	import { onMount } from 'svelte';
     import { GitHub } from '../logos';
 
     export let size: string = "2em";
@@ -14,12 +15,10 @@
         const data = await response.json();
         return data;
     }
-
-    let dataPromise = loadGitHubData();
-    let loaded = false;
+    let dataPromise: Promise<any> = new Promise(() => {});
 </script>
-
-<HoverCard.Root>
+<div role="note" on:mouseover|once={() => {dataPromise = loadGitHubData()}} on:focus={() => {}}>
+  <HoverCard.Root>
     <HoverCard.Trigger
       href="https://github.com/haukened/wireguard-web"
       target="_blank"
@@ -61,3 +60,4 @@
     {/await}
     </HoverCard.Content>
   </HoverCard.Root>
+</div>
