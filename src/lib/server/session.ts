@@ -39,6 +39,7 @@ export function generateSessionToken(): string {
 export async function createSession(token:string, userId: number): Promise<Session> {
     // 1. Hash the token to get the session ID
     const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+    console.log('created sessionId: ', sessionId);
     // 2. Create a session object
     const session: Session = {
         id: sessionId,
@@ -52,36 +53,59 @@ export async function createSession(token:string, userId: number): Promise<Sessi
 }
 
 /**
+ * Retrieves the session ID from the cookies of the given request event.
+ *
+ * @param event - The request event containing the cookies.
+ * @returns The session ID as a lowercase hexadecimal string.
+ */
+export const getSessionId = (event: RequestEvent): string | null => {
+    const token = event.cookies.get('session');
+    if (token) {
+        return encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+    }
+    return null;
+}
+
+/**
  * Validates a session token 
  *
  * @param token - The session token to validate.
  * @returns A promise that resolves to a `SessionValidationResult` object containing the session and user information.
  */
-export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
+export async function validateSessionToken(event: RequestEvent): Promise<SessionValidationResult> {
     // 1. Hash the token to get the session ID
-    const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+    const sessionId = getSessionId(event);
+    if (!sessionId) {
+        return { session: null, user: null };
+    }
+
     // 2. Query the database for the session
     const result = await db
         .select({ user: users, session: sessions })
         .from(sessions)
         .innerJoin(users, eq(sessions.userId, users.id))
         .where(eq(sessions.id, sessionId))
+
     // 3. Check if the session exists and is valid
     if (result.length === 0) {
         return { session: null, user: null };
     }
+
     // 4. Check if the session is expired
     const { user, session } = result[0];
     if (Date.now() >= session.expiresAt.getTime()) {
         // Session expired
-        await db.delete(sessions).where(eq(sessions.id, sessionId));
+        await invalidateSesssion(event);
         return { session: null, user: null };
     }
+
     // 5. Extend session if it's about to expire
     if (Date.now() >= session.expiresAt.getTime() - 20 * 60 * 1000) { // 20 minutes in milliseconds
         session.expiresAt = new Date(Date.now() + 60 * 60 * 1000); // Extend session by 1 hour
+        updateSessionCookieExpiration(event, session.expiresAt);
         await db.update(sessions).set({ expiresAt: session.expiresAt }).where(eq(sessions.id, sessionId));
     }
+    
     // 6. Return the session and user
     return { session, user };
 }
@@ -96,10 +120,22 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
     event.cookies.set('session' , token, {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
         expires: expiresAt,
         path: '/'
     });
+}
+
+export function updateSessionCookieExpiration(event: RequestEvent, expiresAt: Date): void {
+    let token = event.cookies.get('session');
+    if (token) {
+        event.cookies.set('session', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            expires: expiresAt,
+            path: '/'
+        });
+    }
 }
 
 /**
@@ -123,8 +159,11 @@ export function deleteSesssionTokenCookie(event: RequestEvent): void {
  * @param sessionId - The unique identifier of the session to be invalidated.
  * @returns A promise that resolves when the session has been successfully deleted.
  */
-export async function invalidateSesssion(sessionId: string): Promise<void> {
-    await db.delete(sessions).where(eq(sessions.id, sessionId));
+export async function invalidateSesssion(event: RequestEvent): Promise<void> {
+    const sessionId = getSessionId(event);
+    if (sessionId) {
+        await db.delete(sessions).where(eq(sessions.id, sessionId));
+    }
 }
 
 export type SessionValidationResult =

@@ -1,17 +1,71 @@
 <script lang="ts">
-    import { Button } from "$lib/components/ui/button";
     import * as Card from "$lib/components/ui/card";
-    import { Input } from "$lib/components/ui/input";
-    import { Label } from "$lib/components/ui/label";
-    import * as Tooltip from "$lib/components/ui/tooltip";
+    import { Button } from '$lib/components/ui/button';
+    import { Input } from '$lib/components/ui/input';
+    import { type Infer, type SuperValidated, superForm } from 'sveltekit-superforms';
+    import { zodClient } from "sveltekit-superforms/adapters";
+    import * as Form from "$lib/components/ui/form";
+    import { setupFormSchema, type SetupFormSchema } from './schema';
+    import * as m from '$lib/paraglide/messages.js';
+
+    export let data: SuperValidated<Infer<SetupFormSchema>>;
+
+    const form = superForm(data, {
+        validators: zodClient(setupFormSchema),
+        dataType: 'json'
+    });
+
+    const { form: formData, enhance } = form;
 </script>
 
-<Card.Root class="w-[350px] mt-20">
+<Card.Root class="w-96 max-w-full">
     <Card.Header>
-        <Card.Title>Welcome!</Card.Title>
-        <Card.Description>Lets get you set up...</Card.Description>
+      <Card.Title>{m.setupWelcome()}</Card.Title>
+      <Card.Description>{m.setupDescription()}</Card.Description>
     </Card.Header>
     <Card.Content>
-        
+        <form method="POST" use:enhance id="setup-form" class="space-y-4">
+            <Form.Field {form} name="firstname">
+                <Form.Control let:attrs>
+                    <Form.Label>{m.firstName()}</Form.Label>
+                    <Input placeholder={m.setupFirstNamePlaceholder()} {...attrs} bind:value={$formData.firstname}/>
+                </Form.Control>
+                <Form.FieldErrors/>
+            </Form.Field>
+            <Form.Field {form} name="lastname">
+                <Form.Control let:attrs>
+                    <Form.Label>{m.lastName()}</Form.Label>
+                    <Input placeholder={m.setupLastNamePlaceholder()} {...attrs} bind:value={$formData.lastname}/>
+                </Form.Control>
+                <Form.FieldErrors/>
+            </Form.Field>
+            <Form.Field {form} name="email">
+                <Form.Control let:attrs>
+                    <Form.Label>{m.email()}</Form.Label>
+                    <Form.Description>
+                        Optional, used for gravatar only.
+                    </Form.Description>
+                    <Input placeholder={m.setupEmailPlaceholder()} {...attrs} bind:value={$formData.email}/>
+                </Form.Control>
+                <Form.FieldErrors/>
+            </Form.Field>
+            <Form.Field {form} name="username">
+                <Form.Control let:attrs>
+                    <Form.Label>{m.username()}</Form.Label>
+                    <Input placeholder={m.setupUsernamePlaceholder()} {...attrs} bind:value={$formData.username}/>
+                </Form.Control>
+                <Form.FieldErrors/>
+            </Form.Field>
+            <Form.Field {form} name="password">
+                <Form.Control let:attrs>
+                    <Form.Label>{m.password()}</Form.Label>
+                    <Input type='password' placeholder={m.setupPasswordPlaceholder()} {...attrs} bind:value={$formData.password}/>
+                </Form.Control>
+                <Form.FieldErrors/>
+            </Form.Field>
+            <div class="flex justify-end">
+                <Button type="submit" variant="default">{m.deploy()}</Button>
+            </div>
+        </form>
     </Card.Content>
-</Card.Root>
+  </Card.Root>

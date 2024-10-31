@@ -3,7 +3,10 @@ import { sql, type InferSelectModel } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
 	id: integer('id', {mode: 'number'}).primaryKey({autoIncrement: true}),
-	username: text('username').notNull(),
+	firstname: text('firstname').notNull(),
+	lastname: text('lastname').notNull(),
+	email: text('email'),
+	username: text('username').notNull().unique(),
 	password: text('password').notNull(),
 	disabled: integer('disabled', {mode: 'boolean'}).notNull().default(false),
 	created_at: integer('created_at', {mode: 'timestamp'}).notNull().default(sql`CURRENT_TIMESTAMP`),

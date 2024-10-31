@@ -5,12 +5,16 @@
 	import { Menu } from '$lib/components/custom';
 	
 	import '../app.css';
-	let { children } = $props();
+	import type { LayoutData } from './$types';
+	import type { Snippet } from 'svelte';
+	let { data, children }: { data: LayoutData, children: Snippet} = $props();
+	
+	console.log('layout data', data);
 </script>
 
 <ModeWatcher/>
 <ParaglideJS {i18n}>
-	<Menu/>
+	<Menu user={data.user}/>
 	<div id="content-container" class="container flex flex-col h-screen w-screen items-center">
 		{@render children()}
 	</div>

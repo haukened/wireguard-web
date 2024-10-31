@@ -2,8 +2,8 @@ import type { Handle } from '@sveltejs/kit';
 import { i18n } from '$lib/i18n';
 import { 
     validateSessionToken,
-    setSessionTokenCookie,
     deleteSesssionTokenCookie,
+    invalidateSesssion,
 } from '$lib/server/session';
 import { sequence } from '@sveltejs/kit/hooks';
 import fs from 'fs';
@@ -23,10 +23,14 @@ import { redirect } from '@sveltejs/kit';
  * @returns {Promise<Response>} The response object, either a redirect to the setup page or the resolved request.
  */
 const handleSetup: Handle = async ({ event, resolve }) => {
-    if (!fs.existsSync('.setup_completed')) {
+    if (!fs.existsSync('.setup-complete')) {
         // If setup is not completed, redirect to setup page
         if (event.url.pathname !== '/setup') {
             return redirect(302, '/setup');
+        }
+    } else {
+        if (event.url.pathname === '/setup') {
+            return redirect(302, '/login'); // Redirect to home page if setup is already completed
         }
     }
     return resolve(event);
@@ -34,7 +38,6 @@ const handleSetup: Handle = async ({ event, resolve }) => {
 
 // Handle translations via paraglide
 const handleParaglide: Handle = i18n.handle();
-
 
 /**
  * Middleware to handle user sessions.
@@ -50,25 +53,28 @@ const handleParaglide: Handle = i18n.handle();
  * @returns {Promise<Response>} The response from the next middleware or route handler.
  */
 const handleSessions: Handle = async ({ event, resolve }) => {
-    const token = event.cookies.get('session') ?? null; // Get the session token from cookies
-    // If no token is found, set user and session to null
-    if (token === null) {
-        event.locals.user = null; // No user is authenticated
-        event.locals.session = null; // No session exists
+    if (event.url.pathname === '/setup' || event.url.pathname === '/login') {
         return resolve(event);
     }
-    // Validate the session token
-    const { user, session } = await validateSessionToken(token); // Validate the session token
-    if (session != null) {
-        // If the session is valid, set the session token cookie
-        setSessionTokenCookie(event, session.id, new Date(session.expiresAt)); // Set the session token cookie
+    const token = event.cookies.get('session') ?? null; // Get the session token from cookies
+    // If no token is found, set user and session to null
+    if (!token) {
+        event.locals.user = null; // No user is authenticated
+        event.locals.session = null; // No session exists
+        return redirect(302, '/login'); // Redirect to login page
     } else {
-        // If the session is invalid, delete the session token cookie
-        deleteSesssionTokenCookie(event); // Delete the session token cookie
+        // Validate the session token
+        const { user, session } = await validateSessionToken(event); // Validate the session token
+        if (session === null || user === null) {
+            // If the session is invalid, delete the session token cookie
+            invalidateSesssion(event); // Invalidate the session in the database
+            deleteSesssionTokenCookie(event); // Delete the session token cookie
+        }
+        // Set the user and session in locals
+        event.locals.user = user; 
+        event.locals.session = session;
     }
-    // Set the user and session in locals
-    event.locals.user = user; 
-    event.locals.session = session;
+    
     // Continue to the next middleware or route handler
     return resolve(event);
 }

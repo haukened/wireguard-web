@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "rm ./db.sqlite; drizzle-kit push; vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -13,6 +13,7 @@
 		"db:push": "drizzle-kit push",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
+		"db:clean": "rm ./db.sqlite ./.setup-complete; drizzle-kit push",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run"
 	},
@@ -50,6 +51,7 @@
 	},
 	"dependencies": {
 		"@inlang/paraglide-sveltekit": "^0.11.1",
+		"@node-rs/argon2": "^2.0.0",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"@sveltejs/adapter-node": "^5.2.9",

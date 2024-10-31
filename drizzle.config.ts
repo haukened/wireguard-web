@@ -4,10 +4,10 @@ export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
 
 	dbCredentials: {
-		url: process.env.DB_URL || 'db.sqlite',
+		url: 'db.sqlite',
 	},
 
 	verbose: true,
-	strict: true,
+	strict: false,
 	dialect: 'sqlite'
 });
