@@ -41,10 +41,12 @@
             </Form.Field>
             <Form.Field {form} name="email">
                 <Form.Control let:attrs>
-                    <Form.Label>{m.email()}</Form.Label>
-                    <Form.Description>
-                        Optional, used for gravatar only.
-                    </Form.Description>
+                    <div class="flex flex-row items-center space-x-4">
+                        <Form.Label>{m.email()}</Form.Label>
+                        <Form.Description>
+                            Optional, used for gravatar only.
+                        </Form.Description>
+                    </div>
                     <Input placeholder={m.setupEmailPlaceholder()} {...attrs} bind:value={$formData.email}/>
                 </Form.Control>
                 <Form.FieldErrors/>

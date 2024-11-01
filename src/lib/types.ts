@@ -13,5 +13,8 @@ export type UserInfo = {
     lastname: string;
     email?: string;
     gravatar?: string;
+    disabled: boolean;
+    created_at: Date;
+    updated_at: Date;
     last_login?: Date;
 }
