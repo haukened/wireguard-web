@@ -21,6 +21,13 @@ function setupDone() {
 
 export const actions: Actions = {
     default: async (event) => {
+        // if the setup is already done, return a 403
+        if (fs.existsSync('.setup-complete')) {
+            return fail(403, {
+                error: 'Setup is already complete',
+            });
+        }
+        // validate the form
         const form = await superValidate(event, zod(setupFormSchema));
         if (!form.valid) {
             return fail(400, {

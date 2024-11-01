@@ -9,8 +9,8 @@ export const users = sqliteTable('users', {
 	username: text('username').notNull().unique(),
 	password: text('password').notNull(),
 	disabled: integer('disabled', {mode: 'boolean'}).notNull().default(false),
-	created_at: integer('created_at', {mode: 'timestamp'}).notNull().default(sql`CURRENT_TIMESTAMP`),
-	updated_at: integer('updated_at', {mode: 'timestamp'}).notNull().default(sql`CURRENT_TIMESTAMP`),
+	created_at: integer('created_at', {mode: 'timestamp'}).notNull().default(sql`(unixepoch())`),
+	updated_at: integer('updated_at', {mode: 'timestamp'}).notNull().default(sql`(unixepoch())`),
 	last_login: integer('last_login', {mode: 'timestamp'}),
 });
 

@@ -5,8 +5,8 @@ import type { UserInfo } from '../../types';
 const client = new Database( 'db.sqlite' );
 export const db = drizzle(client);
 
-const createGravatarURL = (email: string | null): string => {
-    if (!email) return "https://www.gravatar.com/avatar/000000?d=404";
+const createGravatarURL = (email: string | null): string | undefined => {
+    if (!email) return undefined;
     const hash = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
     return `https://www.gravatar.com/avatar/${hash}?d=404`;
 };

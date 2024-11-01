@@ -12,6 +12,6 @@ export type UserInfo = {
     firstname: string;
     lastname: string;
     email?: string;
-    gravatar: string;
+    gravatar?: string;
     last_login?: Date;
 }

@@ -13,6 +13,8 @@
   "name": "Name",
   "password": "Password",
   "passwordDescription": "Enter your password",
+  "profile": "My Profile",
+  "settings": "Settings",
   "setupDescription": "Lets get you started...",
   "setupEmailPlaceholder": "john.doe@example.com",
   "setupFirstNamePlaceholder": "John",
