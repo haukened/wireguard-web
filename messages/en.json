@@ -21,6 +21,7 @@
   "usernameDescription": "Enter your username",
   "passwordDescription": "Enter your password",
   "login": "Login",
+  "logout": "Logout",
   "loginDescription": "Login to your account",
   "deploy": "Deploy"
 }

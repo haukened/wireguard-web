@@ -39,7 +39,6 @@ export function generateSessionToken(): string {
 export async function createSession(token:string, userId: number): Promise<Session> {
     // 1. Hash the token to get the session ID
     const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-    console.log('created sessionId: ', sessionId);
     // 2. Create a session object
     const session: Session = {
         id: sessionId,
