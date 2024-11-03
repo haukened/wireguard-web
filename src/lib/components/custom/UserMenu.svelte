@@ -4,7 +4,8 @@
     import * as m from '$lib/paraglide/messages';
     import type { UserInfo } from '$lib/types';
     import { goto } from "$app/navigation";
-    import { LogIn, LogOut, User, Users, RectangleEllipsis } from 'lucide-svelte';
+    import { LogOut, User, Users, RectangleEllipsis, Sun, Moon, House } from 'lucide-svelte';
+    import { toggleMode } from 'mode-watcher';
 
     export let user: UserInfo | null;
 </script>
@@ -20,6 +21,11 @@
         </Avatar.Root>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
+        <DropdownMenu.Item>
+            <House class="mr-2 size-4" />
+            {m.home()}
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator/>
         <DropdownMenu.Group>
             <DropdownMenu.GroupHeading>{m.myAccount()}</DropdownMenu.GroupHeading>
             <DropdownMenu.Item onclick={() => goto('/profile')}>
@@ -34,6 +40,11 @@
         <DropdownMenu.Separator/>
         <DropdownMenu.Group>
             <DropdownMenu.GroupHeading>{m.settings()}</DropdownMenu.GroupHeading>
+            <DropdownMenu.Item onclick={() => toggleMode()}>
+                <Sun class="mr-2 size-4 transition-all dark:-rotate-90 dark:hidden"/>
+                <Moon class="mr-2 size-4 transition-all dark:rotate-0 hidden dark:block"/>
+                {m.toggleTheme()}
+            </DropdownMenu.Item>
             <DropdownMenu.Item onclick={() => goto('/users')}>
                 <Users class="mr-2 size-4"/>
                 {m.users()}

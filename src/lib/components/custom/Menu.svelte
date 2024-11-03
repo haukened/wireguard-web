@@ -14,7 +14,7 @@
             <h1 class="text-xl font-semibold">WireGuard Web</h1>
         </a>
     </div>
-    <div id="menu-end" class="flex flex-row items-center space-x-4">
+    <div id="menu-end" class="flex flex-row items-center space-x-8">
         <GitHubHover />
         <UserMenu {user}/>
     </div>
