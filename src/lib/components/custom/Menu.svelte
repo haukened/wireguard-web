@@ -1,5 +1,4 @@
 <script lang="ts">
-    import ModeSwitch from "./ModeSwitch.svelte";
     import GitHubHover from "./GitHubHover.svelte";
     import UserMenu from "./UserMenu.svelte";
     import { Emblem } from "../logos";
@@ -17,7 +16,6 @@
     </div>
     <div id="menu-end" class="flex flex-row items-center space-x-4">
         <GitHubHover />
-        <ModeSwitch />
         <UserMenu {user}/>
     </div>
 </div>

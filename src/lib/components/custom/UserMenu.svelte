@@ -4,7 +4,7 @@
     import * as m from '$lib/paraglide/messages';
     import type { UserInfo } from '$lib/types';
     import { goto } from "$app/navigation";
-    import { Login } from '$lib/components/logos';
+    import { LogIn, LogOut, User, Users, RectangleEllipsis } from 'lucide-svelte';
 
     export let user: UserInfo | null;
 </script>
@@ -20,14 +20,33 @@
         </Avatar.Root>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
-        <DropdownMenu.Item onclick={() => goto('/profile')}>{m.profile()}</DropdownMenu.Item>
-        <DropdownMenu.Item onclick={() => goto('/settings')}>{m.settings()}</DropdownMenu.Item>
+        <DropdownMenu.Group>
+            <DropdownMenu.GroupHeading>{m.myAccount()}</DropdownMenu.GroupHeading>
+            <DropdownMenu.Item onclick={() => goto('/profile')}>
+                <User class="mr-2 size-4"/>
+                {m.profile()}
+            </DropdownMenu.Item>
+            <DropdownMenu.Item onclick={() => goto('/password')}>
+                <RectangleEllipsis class="mr-2 size-4"/>
+                {m.password()}
+            </DropdownMenu.Item>
+        </DropdownMenu.Group>
+        <DropdownMenu.Separator/>
+        <DropdownMenu.Group>
+            <DropdownMenu.GroupHeading>{m.settings()}</DropdownMenu.GroupHeading>
+            <DropdownMenu.Item onclick={() => goto('/users')}>
+                <Users class="mr-2 size-4"/>
+                {m.users()}
+            </DropdownMenu.Item>
+        </DropdownMenu.Group>
+        <DropdownMenu.Separator/>
         <DropdownMenu.Item onclick={() => {
             user = null;
             goto('/logout')    
-        }}>{m.logout()}</DropdownMenu.Item>
+        }}>
+            <LogOut class="mr-2 size-4"/>
+            {m.logout()}
+        </DropdownMenu.Item>
     </DropdownMenu.Content>
 </DropdownMenu.Root>
-{:else}
-<Login/>
 {/if}

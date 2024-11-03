@@ -10,13 +10,14 @@
   "loginDescription": "Login to your account",
   "logout": "Logout",
   "modeDescription": "Toggle Theme",
+  "myAccount": "My Account",
   "name": "Name",
   "password": "Password",
   "passwordChangeDescription": "Change your password here.",
   "passwordNew": "New Password",
   "passwordConfirm": "Confirm Password",
   "passwordDescription": "Enter your password",
-  "profile": "My Profile",
+  "profile": "Profile",
   "profileDescription": "Edit your personal details here.",
   "save": "Save",
   "settings": "Settings",
@@ -30,5 +31,6 @@
   "systemModeLabel": "System",
   "title": "WireGuard Web",
   "username": "Username",
-  "usernameDescription": "Enter your username"
+  "usernameDescription": "Enter your username",
+  "users": "Users"
 }

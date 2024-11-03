@@ -3,7 +3,7 @@ import { superValidate } from "sveltekit-superforms";
 import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
 import { zod } from "sveltekit-superforms/adapters";
-import { profileFormSchema } from "./schema";
+import { passwordFormSchema } from './schema';
 
 export const load: PageServerLoad = async (event) => {
     let currentUser = event.locals.user;
@@ -13,6 +13,6 @@ export const load: PageServerLoad = async (event) => {
     }
     const user = sanitizeUser(currentUser);
     return { 
-        form: await superValidate(user, zod(profileFormSchema)),
+        form: await superValidate(zod(passwordFormSchema)),
     }
 }
