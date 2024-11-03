@@ -7,7 +7,7 @@
     export let data;
 </script>
 
-<Card.Root class="w-96 max-w-full h-full">
+<Card.Root class="w-96 max-w-full">
     <Card.Header>
         <Card.Title>{m.password()}</Card.Title>
         <Card.Description>{m.passwordChangeDescription()}</Card.Description>
