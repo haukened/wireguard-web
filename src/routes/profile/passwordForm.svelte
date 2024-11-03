@@ -21,14 +21,14 @@
     <Form.Field {form} name="password">
         <Form.Control let:attrs>
             <Form.Label>{m.passwordNew()}</Form.Label>
-            <Input placeholder={m.setupFirstNamePlaceholder()} {...attrs} bind:value={$formData.password}/>
+            <Input placeholder={m.passwordNew()} {...attrs} bind:value={$formData.password}/>
         </Form.Control>
         <Form.FieldErrors/>
     </Form.Field>
     <Form.Field {form} name="confirm">
         <Form.Control let:attrs>
             <Form.Label>{m.passwordConfirm()}</Form.Label>
-            <Input placeholder={m.setupLastNamePlaceholder()} {...attrs} bind:value={$formData.confirm}/>
+            <Input placeholder={m.passwordConfirm()} {...attrs} bind:value={$formData.confirm}/>
         </Form.Control>
         <Form.FieldErrors/>
     </Form.Field>
