@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { PageServerLoad, Actions } from "./$types";
-import { superValidate } from "sveltekit-superforms";
+import { superValidate, setError } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
 import { verifyPasswordHash } from "$lib/server/password";
 import { loginFormSchema } from "./schema";
@@ -21,32 +21,20 @@ export const actions: Actions = {
         // validate the form
         const form = await superValidate(event, zod(loginFormSchema));
         if (!form.valid) {
-            return fail(401, {
-                form,
-                error: 'Invalid username or password',
-            });
+            return fail(400, { form });
         }
         // then we can check if the user exists
         const user = await db.select().from(users).where(eq(users.username, form.data.username)).limit(1);
         if (user.length != 1) {
-            return fail(401, {
-                form,
-                error: 'Invalid username or password',
-            });
+            return setError(form, '', 'Invalid username or password');
         }
         // check if the password is correct
         if (!await verifyPasswordHash(user[0].password, form.data.password)) {
-            return fail(401, {
-                form,
-                error: 'Invalid username or password',
-            });
+            return setError(form, '', 'Invalid username or password');
         }
         // check if the user is disabled
         if (user[0].disabled) {
-            return fail(403, {
-                form,
-                error: 'This account is disabled',
-            });
+            return setError(form, '', 'User is disabled');
         }
         // update the last login
         const now = new Date(Date.now());

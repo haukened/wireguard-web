@@ -7,6 +7,7 @@
     import * as Form from "$lib/components/ui/form";
     import { loginFormSchema, type LoginFormSchema } from './schema';
     import * as m from '$lib/paraglide/messages.js';
+	import { toast } from "svelte-sonner";
 
     export let data: SuperValidated<Infer<LoginFormSchema>>;
 
@@ -15,7 +16,15 @@
         dataType: 'json'
     });
 
-    const { form: formData, enhance } = form;
+    const { form: formData, errors, enhance } = form;
+
+    $: ((errors) => {
+        if (errors) {
+            errors.forEach(error => {
+                toast.error(error);
+            });
+        }
+    })($errors._errors);
 </script>
 
 <Card.Root class="w-96 max-w-full">
@@ -30,14 +39,12 @@
                     <Form.Label>{m.username()}</Form.Label>
                     <Input placeholder={m.usernameDescription()} {...attrs} bind:value={$formData.username}/>
                 </Form.Control>
-                <Form.FieldErrors/>
             </Form.Field>
             <Form.Field {form} name="password">
                 <Form.Control let:attrs>
                     <Form.Label>{m.password()}</Form.Label>
                     <Input type='password' placeholder={m.passwordDescription()} {...attrs} bind:value={$formData.password}/>
                 </Form.Control>
-                <Form.FieldErrors/>
             </Form.Field>
             <div class="flex justify-end">
                 <Button type="submit" variant="default">{m.login()}</Button>

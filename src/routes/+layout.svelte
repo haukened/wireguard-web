@@ -3,6 +3,7 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Menu } from '$lib/components/custom';
+	import { Toaster } from '$lib/components/ui/sonner';
 	
 	import '../app.css';
 	import type { LayoutData } from './$types';
@@ -12,6 +13,7 @@
 
 <ModeWatcher/>
 <ParaglideJS {i18n}>
+	<Toaster richColors position='top-center' />
 	<Menu user={data.user}/>
 	<div id="content-container" class="container flex flex-col h-screen w-screen items-center">
 		{@render children()}
