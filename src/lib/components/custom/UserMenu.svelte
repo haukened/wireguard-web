@@ -19,7 +19,7 @@
         </Avatar.Root>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
-        <DropdownMenu.Item>
+        <DropdownMenu.Item onclick={() => goto("/")}>
             <House class="mr-2 size-4" />
             {m.home()}
         </DropdownMenu.Item>
