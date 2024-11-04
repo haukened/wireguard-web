@@ -6,6 +6,7 @@ import { profileFormSchema } from "./schema";
 import type { Actions } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq } from 'drizzle-orm';
+import * as m from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async (event) => {
     let currentUser = event.locals.user;
@@ -33,7 +34,7 @@ export const actions: Actions = {
         // then we can check if the user exists
         const user = await db.select().from(users).where(eq(users.id, event.locals.user.id)).limit(1);
         if (user.length != 1) {
-            return setError(form, '', 'Unable to find user with username ' + event.locals.user.username);
+            return setError(form, '', m.errorUserNotFound() + ' ' + event.locals.user.username);
         }
         // update the user
         try {
@@ -44,7 +45,7 @@ export const actions: Actions = {
                 updated_at: new Date(Date.now())
             }).where(eq(users.id, event.locals.user.id));
         } catch (e) {
-            return setError(form, '', 'A database error occurred while updating the user');
+            return setError(form, '', m.errorDatabaseError());
         } finally {
             // update the user object
             event.locals.user = {

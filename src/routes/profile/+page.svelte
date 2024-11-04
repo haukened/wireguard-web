@@ -4,18 +4,36 @@
     import { Button } from '$lib/components/ui/button';
     import { Input } from '$lib/components/ui/input';
     import * as Form from "$lib/components/ui/form";
-	import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms';
-	import { profileFormSchema, type ProfileFormSchema } from './schema';
+	import { superForm } from 'sveltekit-superforms';
+	import { profileFormSchema } from './schema';
 	import { zodClient } from 'sveltekit-superforms/adapters';
+	import type { PageData } from "./$types";
+    import { toast } from "svelte-sonner";
 
-    export let data;
+    export let data: PageData;
 
     const form = superForm(data.form, {
         validators: zodClient(profileFormSchema),
         dataType: 'json',
+        invalidateAll: 'force',
+        resetForm: true,
+        multipleSubmits: 'prevent',
+        onResult({ result }) {
+            if (result.status === 200) {
+                toast.success(m.profileUpdated());
+            }
+        }
     })
 
-    const { form: formData, enhance, tainted, errors } = form;
+    const { form: formData, enhance, tainted, errors,  } = form;
+
+    $: ((errors) => {
+        if (errors) {
+            errors.forEach(error => {
+                toast.error(error);
+            });
+        }
+    })($errors._errors);
 </script>
 
 <Card.Root class="w-96 max-w-full">
@@ -44,7 +62,7 @@
                     <div class="flex flex-row items-center space-x-4">
                         <Form.Label>{m.email()}</Form.Label>
                         <Form.Description>
-                            Optional, used for gravatar only.
+                            {m.gravatarOptional()}
                         </Form.Description>
                     </div>
                     <Input placeholder={m.setupEmailPlaceholder()} {...attrs} bind:value={$formData.email}/>
