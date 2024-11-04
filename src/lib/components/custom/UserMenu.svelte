@@ -14,9 +14,7 @@
 <DropdownMenu.Root>
     <DropdownMenu.Trigger>
         <Avatar.Root class="h-10 w-10">
-            {#if user.gravatar}
-            <Avatar.Image src={user.gravatar} alt={user.firstname + " " + user.lastname} />
-            {/if}
+            <Avatar.Image src={user.gravatar ? user.gravatar : "https://gravatar.com/avatar/0000?d=404"} alt={user.firstname + " " + user.lastname} />
             <Avatar.Fallback>{user.firstname?.charAt(0).toUpperCase() + user.lastname?.charAt(0).toUpperCase()}</Avatar.Fallback>
         </Avatar.Root>
     </DropdownMenu.Trigger>

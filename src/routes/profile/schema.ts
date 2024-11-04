@@ -6,7 +6,8 @@ export const profileFormSchema = z.object({
     email: z.string()
         .email('Invalid email address')
         .max(255, 'Email must be at most 255 characters long')
-        .optional(),
+        .optional()
+        .or(z.literal('')),
 });
 
 export type ProfileFormSchema = typeof profileFormSchema;

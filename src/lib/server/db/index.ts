@@ -11,7 +11,7 @@ export const db = drizzle(client);
  * @param email - The email address to generate the Gravatar URL for. If null, the function returns undefined.
  * @returns The Gravatar URL for the given email, or undefined if the email is null.
  */
-const createGravatarURL = (email: string | null): string | undefined => {
+export const createGravatarURL = (email: string | null): string | undefined => {
     if (!email) return undefined;
     const hash = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
     return `https://www.gravatar.com/avatar/${hash}?d=404`;
