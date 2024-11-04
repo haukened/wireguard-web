@@ -18,14 +18,9 @@
         invalidateAll: 'force',
         resetForm: true,
         multipleSubmits: 'prevent',
-        onResult({ result }) {
-            if (result.status === 200) {
-                toast.success(m.profileUpdated());
-            }
-        }
     })
 
-    const { form: formData, enhance, tainted, errors,  } = form;
+    const { form: formData, enhance, tainted, errors, message } = form;
 
     $: ((errors) => {
         if (errors) {
@@ -34,6 +29,12 @@
             });
         }
     })($errors._errors);
+
+    $: ((message) => {
+        if (message) {
+            toast.success(message);
+        }
+    })($message);
 </script>
 
 <Card.Root class="w-96 max-w-full">

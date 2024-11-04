@@ -1,5 +1,5 @@
 import { sanitizeUser, db, type User, users, createGravatarURL } from "$lib/server/db";
-import { superValidate, setError } from "sveltekit-superforms";
+import { superValidate, setError, message } from "sveltekit-superforms";
 import type { PageServerLoad } from "./$types";
 import { zod } from "sveltekit-superforms/adapters";
 import { profileFormSchema } from "./schema";
@@ -56,6 +56,6 @@ export const actions: Actions = {
             };
         }
         // return the form
-        return { form };
+        return message(form, m.profileUpdated());
     }
 }
