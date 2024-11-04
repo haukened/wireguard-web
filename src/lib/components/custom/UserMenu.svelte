@@ -7,7 +7,7 @@
     import { LogOut, User, Users, RectangleEllipsis, Sun, Moon, House } from 'lucide-svelte';
     import { toggleMode } from 'mode-watcher';
 
-    export let user: UserInfo | null;
+    let { user }: { user: UserInfo | null } = $props();
 </script>
 
 {#if user}

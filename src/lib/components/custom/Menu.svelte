@@ -4,7 +4,7 @@
     import { Emblem } from "../logos";
 	import type { UserInfo } from "$lib/types";
 
-    export let user: UserInfo | null;
+    let { user }: { user: UserInfo | null } = $props();
 </script>
 
 <div class="container flex flex-row items-center justify-between space-y-2 py-4">

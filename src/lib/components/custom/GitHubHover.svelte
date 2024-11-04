@@ -14,6 +14,7 @@
     }
     let dataPromise: Promise<any> = new Promise(() => {});
 </script>
+
 <div role="note" on:mouseover|once={() => {dataPromise = loadGitHubData()}} on:focus={() => {}}>
   <HoverCard.Root openDelay={50} closeDelay={150}>
     <HoverCard.Trigger
