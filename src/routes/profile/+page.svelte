@@ -13,7 +13,6 @@
     const form = superForm(data.form, {
         validators: zodClient(profileFormSchema),
         dataType: 'json',
-        invalidateAll: 'force'
     })
 
     const { form: formData, enhance, tainted, errors } = form;
