@@ -4,8 +4,6 @@
     import { Skeleton } from '$lib/components/ui/skeleton';
     import { GitHub } from '../logos';
 
-    export let size: string = "2em";
-
     async function loadGitHubData() {
         const response = await fetch(`https://api.github.com/repos/haukened/wireguard-web`);
         if (!response.ok) {
