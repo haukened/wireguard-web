@@ -13,7 +13,7 @@
 
 <ModeWatcher/>
 <ParaglideJS {i18n}>
-	<Toaster richColors position='top-center' />
+	<Toaster richColors/>
 	<Menu user={data.user}/>
 	<div id="content-container" class="container flex flex-col h-screen w-screen items-center">
 		{@render children()}
