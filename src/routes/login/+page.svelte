@@ -8,8 +8,11 @@
     import { loginFormSchema, type LoginFormSchema } from './schema';
     import * as m from '$lib/paraglide/messages.js';
 	import { toast } from "svelte-sonner";
+	import type { PageData } from "./$types";
 
-    export let data: SuperValidated<Infer<LoginFormSchema>>;
+    //export let data: SuperValidated<Infer<LoginFormSchema>>;
+
+    let { data }: { data: SuperValidated<Infer<LoginFormSchema>> } = $props();
 
     const form = superForm(data, {
         validators: zodClient(loginFormSchema),
@@ -18,13 +21,13 @@
 
     const { form: formData, errors, enhance } = form;
 
-    $: ((errors) => {
-        if (errors) {
-            errors.forEach(error => {
+    $effect(() => {
+        if ($errors._errors) {
+            $errors._errors.forEach(error => {
                 toast.error(error);
             });
         }
-    })($errors._errors);
+    });
 </script>
 
 <Card.Root class="w-96 max-w-full">

@@ -10,7 +10,7 @@
 	import type { PageData } from "./$types";
     import { toast } from "svelte-sonner";
 
-    export let data: PageData;
+    let { data }: { data: PageData } = $props();
 
     const form = superForm(data.form, {
         validators: zodClient(profileFormSchema),
@@ -22,19 +22,16 @@
 
     const { form: formData, enhance, tainted, errors, message } = form;
 
-    $: ((errors) => {
-        if (errors) {
-            errors.forEach(error => {
+    $effect(() => {
+        if ($errors._errors) {
+            $errors._errors.forEach(error => {
                 toast.error(error);
             });
         }
-    })($errors._errors);
-
-    $: ((message) => {
-        if (message) {
-            toast.success(message);
+        if ($message) {
+            toast.success($message);
         }
-    })($message);
+    });
 </script>
 
 <Card.Root class="w-96 max-w-full">
