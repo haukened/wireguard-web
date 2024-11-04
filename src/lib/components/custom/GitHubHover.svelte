@@ -2,7 +2,6 @@
     import * as Avatar from '$lib/components/ui/avatar';
     import * as HoverCard from '$lib/components/ui/hover-card';
     import { Skeleton } from '$lib/components/ui/skeleton';
-	import { onMount } from 'svelte';
     import { GitHub } from '../logos';
 
     export let size: string = "2em";
@@ -25,7 +24,7 @@
       rel="noreferrer noopener"
       class="rounded-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-black"
     >
-      <GitHub size={size}/>
+      <GitHub/>
     </HoverCard.Trigger>
     <HoverCard.Content class="w-80">
     {#await dataPromise}
