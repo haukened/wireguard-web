@@ -43,7 +43,7 @@
                 <Moon class="mr-2 size-4 transition-all dark:rotate-0 hidden dark:block"/>
                 {m.toggleTheme()}
             </DropdownMenu.Item>
-            <DropdownMenu.Item onclick={() => goto('/users')}>
+            <DropdownMenu.Item onclick={() => goto('/admin')}>
                 <Users class="mr-2 size-4"/>
                 {m.users()}
             </DropdownMenu.Item>
