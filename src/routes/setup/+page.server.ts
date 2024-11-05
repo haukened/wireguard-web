@@ -43,8 +43,8 @@ export const actions: Actions = {
                 firstname: form.data.firstname,
                 lastname: form.data.lastname,
                 email: form.data.email,
-                username: form.data.username,
                 password: hash,
+                last_login: new Date(Date.now()),
             }).returning()
             newId = result[0].id;
         } catch (e) {

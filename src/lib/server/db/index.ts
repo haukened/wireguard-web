@@ -1,20 +1,7 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { createHash } from 'crypto';
 import Database from 'better-sqlite3';
 const client = new Database( 'db.sqlite' );
 export const db = drizzle(client);
-
-/**
- * Generates a Gravatar URL for the given email.
- *
- * @param email - The email address to generate the Gravatar URL for. If null, the function returns undefined.
- * @returns The Gravatar URL for the given email, or undefined if the email is null.
- */
-export const createGravatarURL = (email: string | null): string | undefined => {
-    if (!email) return undefined;
-    const hash = createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
-    return `https://www.gravatar.com/avatar/${hash}?d=404`;
-};
 
 /**
  * Checks if an email exists in the users table.

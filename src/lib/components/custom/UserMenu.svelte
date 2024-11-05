@@ -2,19 +2,26 @@
     import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
     import * as Avatar from '$lib/components/ui/avatar';
     import * as m from '$lib/paraglide/messages';
-    import type { UserInfo } from '$lib/types';
+    import type { User } from '$lib/server/db';
+    import { sha256 } from 'js-sha256';
     import { goto } from "$app/navigation";
-    import { LogOut, User, Users, RectangleEllipsis, Sun, Moon, House } from 'lucide-svelte';
+    import { LogOut, User as UserIcon, Users, RectangleEllipsis, Sun, Moon, House } from 'lucide-svelte';
     import { toggleMode } from 'mode-watcher';
 
-    let { user }: { user: UserInfo | null } = $props();
+    let { user }: { user: User | null } = $props();
+
+    const gravatarURL = (email: string): string => {
+        if (!email) return `https://www.gravatar.com/avatar/0000?d=404`;
+        const hash = sha256.create().update(email.trim().toLowerCase()).hex();
+        return `https://www.gravatar.com/avatar/${hash}?d=404`
+    };   
 </script>
 
 {#if user}
 <DropdownMenu.Root>
     <DropdownMenu.Trigger>
         <Avatar.Root class="h-10 w-10">
-            <Avatar.Image src={user.gravatar ? user.gravatar : "https://gravatar.com/avatar/0000?d=404"} alt={user.firstname + " " + user.lastname} />
+            <Avatar.Image src={gravatarURL(user.email)} alt={user.firstname + " " + user.lastname} />
             <Avatar.Fallback>{user.firstname?.charAt(0).toUpperCase() + user.lastname?.charAt(0).toUpperCase()}</Avatar.Fallback>
         </Avatar.Root>
     </DropdownMenu.Trigger>
@@ -27,7 +34,7 @@
         <DropdownMenu.Group>
             <DropdownMenu.GroupHeading>{m.myAccount()}</DropdownMenu.GroupHeading>
             <DropdownMenu.Item onclick={() => goto('/profile')}>
-                <User class="mr-2 size-4"/>
+                <UserIcon class="mr-2 size-4"/>
                 {m.profile()}
             </DropdownMenu.Item>
             <DropdownMenu.Item onclick={() => goto('/password')}>

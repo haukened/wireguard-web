@@ -58,6 +58,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"@sveltejs/adapter-node": "^5.2.9",
 		"better-sqlite3": "^11.1.2",
-		"drizzle-orm": "^0.33.0"
+		"drizzle-orm": "^0.33.0",
+		"js-sha256": "^0.11.0"
 	}
 }
