@@ -4,6 +4,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { Menu } from '$lib/components/custom';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	
 	import '../app.css';
 	import type { LayoutData } from './$types';
@@ -14,8 +15,12 @@
 <ModeWatcher/>
 <ParaglideJS {i18n}>
 	<Toaster richColors/>
-	<Menu user={data.user}/>
-	<div id="content-container" class="container flex flex-col h-screen w-screen items-center">
-		{@render children()}
-	</div>
+	<Tooltip.Provider>
+		<div id="main-container" class="flex flex-col w-screen max-w-4xl justify-self-center">
+			<Menu user={data.user}/>
+			<div id="content-container" class="flex flex-col h-full w-full items-center">
+				{@render children()}
+			</div>
+		</div>
+	</Tooltip.Provider>
 </ParaglideJS>
