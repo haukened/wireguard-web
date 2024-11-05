@@ -1,4 +1,4 @@
-import { sanitizeUser, db, type User, users, createGravatarURL } from "$lib/server/db";
+import { sanitizeUser, db, type User, users, createGravatarURL, emailExists } from "$lib/server/db";
 import { superValidate, setError, message } from "sveltekit-superforms";
 import type { PageServerLoad } from "./$types";
 import { zod } from "sveltekit-superforms/adapters";
@@ -34,7 +34,11 @@ export const actions: Actions = {
         // then we can check if the user exists
         const user = await db.select().from(users).where(eq(users.id, event.locals.user.id)).limit(1);
         if (user.length != 1) {
-            return setError(form, '', m.errorUserNotFound() + ' ' + event.locals.user.username);
+            return setError(form, '', m.errorUserNotFound() + ' ' + event.locals.user.email);
+        }
+        const exists = await emailExists(form.data.email);
+        if (exists && form.data.email !== event.locals.user.email) {
+            return setError(form, 'email', m.errorEmailExists());
         }
         // update the user
         try {
@@ -52,7 +56,7 @@ export const actions: Actions = {
                 ...event.locals.user,
                 firstname: form.data.firstname,
                 lastname: form.data.lastname,
-                email: form.data.email || null,
+                email: form.data.email,
             };
         }
         // return the form

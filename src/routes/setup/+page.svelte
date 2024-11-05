@@ -44,17 +44,10 @@
                     <div class="flex flex-row items-center space-x-4">
                         <Form.Label>{m.email()}</Form.Label>
                         <Form.Description>
-                            Optional, used for gravatar only.
+                            {m.setupEmailDescription()}
                         </Form.Description>
                     </div>
                     <Input placeholder={m.setupEmailPlaceholder()} {...attrs} bind:value={$formData.email}/>
-                </Form.Control>
-                <Form.FieldErrors/>
-            </Form.Field>
-            <Form.Field {form} name="username">
-                <Form.Control let:attrs>
-                    <Form.Label>{m.username()}</Form.Label>
-                    <Input placeholder={m.setupUsernamePlaceholder()} {...attrs} bind:value={$formData.username}/>
                 </Form.Control>
                 <Form.FieldErrors/>
             </Form.Field>

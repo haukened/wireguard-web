@@ -37,10 +37,10 @@
     </Card.Header>
     <Card.Content>
         <form method="POST" use:enhance id="setup-form" class="space-y-4">
-            <Form.Field {form} name="username">
+            <Form.Field {form} name="email">
                 <Form.Control let:attrs>
-                    <Form.Label>{m.username()}</Form.Label>
-                    <Input placeholder={m.usernameDescription()} {...attrs} bind:value={$formData.username}/>
+                    <Form.Label>{m.emailAddress()}</Form.Label>
+                    <Input placeholder={m.emailDescription()} {...attrs} bind:value={$formData.email}/>
                 </Form.Control>
             </Form.Field>
             <Form.Field {form} name="password">

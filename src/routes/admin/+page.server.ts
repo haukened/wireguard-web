@@ -1,6 +1,5 @@
 import { db, users, type User } from "$lib/server/db";
-import type { PageServerLoad } from "./$types";
-import { asc } from "drizzle-orm";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
     // server-side guard - check for user
@@ -11,12 +10,21 @@ export const load: PageServerLoad = async (event) => {
         }
     }
     // get all users
-    const privateUsers = await db.select().from(users).orderBy(asc(users.username));
+    const privateUsers: User[] = await db.select().from(users);
     // remove sensitive data
-    const publicUsers = privateUsers.map((u) => {
-        const { password, ...publicUser } = u;
-        return publicUser;
+    const publicUsers: User[] = privateUsers.map((u) => {
+        u.password = null;
+        return u;
     });
     // return the public users
     return { users: publicUsers }
+}
+
+export const actions: Actions = {
+    delete: async (event) => {
+        // server-side guard - check for user
+        if (!event.locals.user) {
+            return 
+        }
+    }
 }

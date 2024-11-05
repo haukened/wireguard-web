@@ -57,12 +57,7 @@
             </Form.Field>
             <Form.Field {form} name="email">
                 <Form.Control let:attrs>
-                    <div class="flex flex-row items-center space-x-4">
-                        <Form.Label>{m.email()}</Form.Label>
-                        <Form.Description>
-                            {m.gravatarOptional()}
-                        </Form.Description>
-                    </div>
+                    <Form.Label>{m.email()}</Form.Label>
                     <Input placeholder={m.setupEmailPlaceholder()} {...attrs} bind:value={$formData.email}/>
                 </Form.Control>
                 <Form.FieldErrors/>

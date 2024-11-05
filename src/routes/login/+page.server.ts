@@ -24,17 +24,21 @@ export const actions: Actions = {
             return fail(400, { form });
         }
         // then we can check if the user exists
-        const user = await db.select().from(users).where(eq(users.username, form.data.username)).limit(1);
+        const user = await db.select().from(users).where(eq(users.email, form.data.email)).limit(1);
         if (user.length != 1) {
-            return setError(form, '', 'Invalid username or password');
-        }
-        // check if the password is correct
-        if (!await verifyPasswordHash(user[0].password, form.data.password)) {
             return setError(form, '', 'Invalid username or password');
         }
         // check if the user is disabled
         if (user[0].disabled) {
             return setError(form, '', 'User is disabled');
+        }
+        // if the user has not set a password, then they cannot login
+        if (!user[0].password) {
+            return setError(form, '', 'User not yet activated');
+        }
+        // check if the password is correct
+        if (!await verifyPasswordHash(user[0].password, form.data.password)) {
+            return setError(form, '', 'Invalid username or password');
         }
         // update the last login
         const now = new Date(Date.now());
