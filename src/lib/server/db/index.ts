@@ -25,8 +25,8 @@ export function sanitizeUser(user: User): User {
     return user;
 }
 
-import { users, sessions } from './schema'; // Importing the users and sessions tables and their types
-import type { User, Session } from './schema'; // Importing the User and Session types
+import { users, sessions, registrations } from './schema'; // Importing the users and sessions tables and their types
+import type { User, Session, Registration } from './schema'; // Importing the User and Session types
 import { count, eq } from 'drizzle-orm';
-export { users, sessions }; // Exporting the users and sessions tables and their types
-export type { User, Session }; // Exporting the User and Session types
+export { users, sessions, registrations }; // Exporting the users and sessions tables and their types
+export type { User, Session, Registration }; // Exporting the User and Session types

@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { superForm, type SuperValidated, type Infer } from "sveltekit-superforms";
-	import { userFormSchema, type UserFormSchema } from "./schema";
+	import { superForm } from "sveltekit-superforms";
+	import { userFormSchema } from "./schema";
 	import { zodClient } from "sveltekit-superforms/adapters";
-	import type { PageData } from "./$types";
+	import type { ActionData, PageData } from "./$types";
 	import type { User } from "$lib/server/db";
     import { Button } from "$lib/components/ui/button";
     import { CircleCheckBig, CircleX, UserPlus, Ellipsis, Pencil, Trash } from "lucide-svelte";
     import { Input } from '$lib/components/ui/input';
+    import { toast } from "svelte-sonner";
     import * as AlertDialog from "$lib/components/ui/alert-dialog";
     import * as Card from "$lib/components/ui/card";
     import * as Dialog from "$lib/components/ui/dialog";
@@ -23,13 +24,13 @@
         dataType: 'json'
     });
 
-    const { form: formData, enhance } = form;
+    const { form: formData, enhance, errors, message } = form;
 
     let deleteConfirmOpen = $state(false);
     let deleteConfirmUser = $state(null as User | null);
 
     let dialogOpen = $state(false);
-    let dialogAction = $state("add" as "add" | "update");
+    let dialogAction = $state("create" as "create" | "update");
 
     const openDeleteConfirm = (user: User) => {
         deleteConfirmUser = user;
@@ -42,14 +43,21 @@
         dialogOpen = true;
     }
 
-    const openUserAdd = () => {
-        dialogAction = "add";
+    const openUserCreate = () => {
+        dialogAction = "create";
         formData.set({
             firstname: "",
             lastname: "",
-            email: ""
+            email: "",
+            id: undefined,
         });
         dialogOpen = true;
+    }
+
+    const handleSubmit = (e: MouseEvent) => {
+        e.preventDefault();
+        dialogOpen = false;
+        form.submit();
     }
     
     const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -61,6 +69,24 @@
         hour12: false,
         timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone
     });
+
+    $effect(() => {
+        if ($errors._errors) {
+            $errors._errors.forEach(error => {
+                toast.error(error);
+            });
+        }
+        if ($message) {
+            if ($message.text) {
+                toast.success($message.text);
+                $message.text = undefined;
+            }
+            if ($message.token) {
+                toast.success($message.token);
+                $message.token = undefined;
+            }
+        }
+    });
 </script>
 
 <Card.Root class="flex flex-col w-full">
@@ -69,7 +95,7 @@
             <Card.Title>{m.adminTitle()}</Card.Title>
             <Card.Description>{m.adminDescription()}</Card.Description>
         </div>
-        <Button variant="outline" onclick={() => {openUserAdd()}}>
+        <Button variant="outline" onclick={() => {openUserCreate()}}>
             <UserPlus class="mr-2 size-5"/>
             {m.adminUserCreate()}
         </Button>
@@ -185,7 +211,8 @@
                     formData.set({
                         firstname: "",
                         lastname: "",
-                        email: ""
+                        email: "",
+                        id: undefined,
                     });
                 }
             }}
@@ -197,6 +224,7 @@
                     use:enhance
                     class="space-y-4" 
                 >
+                    <input type="hidden" name="id" bind:value={$formData.id} />
                     <Dialog.Header>
                         <Dialog.Title class="capitalize">{dialogAction} User</Dialog.Title>
                         <Dialog.Description>Form Description</Dialog.Description>
@@ -228,7 +256,7 @@
                         <Form.FieldErrors/>
                     </Form.Field>
                     <Dialog.Footer>
-                        <Button>Save</Button>
+                        <Button type="submit" onclick={handleSubmit}>Save</Button>
                     </Dialog.Footer>
                 </form>
             </Dialog.Content>

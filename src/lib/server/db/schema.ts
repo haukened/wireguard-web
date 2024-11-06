@@ -34,3 +34,4 @@ export const registrations = sqliteTable('registrations', {
 
 export type User = InferSelectModel<typeof users>;
 export type Session = InferSelectModel<typeof sessions>;
+export type Registration = InferSelectModel<typeof registrations>;
