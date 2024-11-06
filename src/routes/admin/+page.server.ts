@@ -1,11 +1,12 @@
 import { db, users, type User, registrations } from "$lib/server/db";
-import { type Infer, message, setError, superValidate } from "sveltekit-superforms";
-import type { Actions, PageServerLoad } from "./$types";
-import { zod } from "sveltekit-superforms/adapters";
-import { userFormSchema, type UserFormSchema } from "./schema";
-import { fail, redirect, text } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
+import { fail, redirect } from "@sveltejs/kit";
+import { type Infer, message, setError, superValidate } from "sveltekit-superforms";
+import { userFormSchema, type UserFormSchema } from "./schema";
 import { v4 as uuid4 } from "uuid";
+import { zod } from "sveltekit-superforms/adapters";
+import * as m from '$lib/paraglide/messages';
+import type { Actions, PageServerLoad } from "./$types";
 
 type Message = {
     text: string | undefined;
@@ -43,16 +44,16 @@ export const actions: Actions = {
         const form = await superValidate<Infer<UserFormSchema>,Message>(event, zod(userFormSchema));
         if (!form.valid) {
             return message(form, {
-                text: 'Unable to delete user',
+                text: m.errorCannotDeleteUser(),
                 token: undefined,
             })
         }
         // ensure we have a user Id
         if (!form.data.id) {
-            return setError(form, '', 'User ID is required');
+            return setError(form, '', m.errorUserIdRequired());
         }
         if (event.locals.user.id === form.data.id) {
-            return setError(form, '', 'Don\'t delete yourself.');
+            return setError(form, '', m.errorDeleteSelf());
         }
         // delete the user
         try {
@@ -61,15 +62,15 @@ export const actions: Actions = {
                 .returning();
             // make sure the user was deleted
             if (deleted.length === 0) {
-                return setError(form, '', 'User not found');
+                return setError(form, '', m.errorUserNotFound());
             }
             return message(form, {
-                text: `User ${deleted[0].email} deleted`,
+                text: m.adminUserDeleted({email: deleted[0].email}),
                 token: undefined,
             });
         } catch (e) {
             console.log(e);
-            return setError(form, '', 'Error deleting user');
+            return setError(form, '', m.errorDatabaseError());
         }
     },
     create: async (event) => {
@@ -84,7 +85,7 @@ export const actions: Actions = {
         }
         // ensure we do not have a user Id
         if (form.data.id) {
-            return setError(form, '', 'User ID is not allowed');
+            return setError(form, '', m.errorUserIdNotAllowed());
         }
         // create the user
         const created = await db.insert(users).values({
@@ -94,11 +95,17 @@ export const actions: Actions = {
         }).returning();
         // ensure we created one and only one user
         if (created.length === 0) {
-            return setError(form, '', 'User not created');
+            console.log(m.loggingUnexpectedError({
+                error: m.loggingNoUserCreated(),
+            }));
+            return setError(form, '', m.errorDatabaseError());
         }
         if (created.length > 1) {
             // this should never happen, but hey, we are being safe
-            return setError(form, '', 'Multiple users created');
+            console.log(m.loggingUnexpectedError({
+                error: m.loggingMultipleUsersCreated(),
+            }));
+            return setError(form, '', m.errorDatabaseError());
         }
         const createdUser = created[0];
         // now we need to create a registration token so the user can create a password
@@ -110,16 +117,15 @@ export const actions: Actions = {
         }).returning({ id: registrations.id });
         // ensure we created one and only one registration
         if (registration.length !== 1) {
-            return setError(form, '', 'Error creating registration token');
+            return setError(form, '', m.errorCreatingRegistrationToken());
         }
         // return the created user and the registration token
         return message(form, {
-            text: 'User created',
+            text: m.adminUserCreated({email: createdUser.email}),
             token: regToken,
         });
     },
     update: async (event) => {
-        const start = Date.now();
         // server-side guard - check for user
         if (!event.locals.user) {
             return redirect(302, "/logout");
@@ -131,7 +137,7 @@ export const actions: Actions = {
         }
         // ensure we have a user Id
         if (!form.data.id) {
-            return setError(form, '', 'User ID is required');
+            return setError(form, '', m.errorUserIdRequired());
         }
         // update the user
         const updated: { id: number }[] = await db.update(users).set({
@@ -141,10 +147,8 @@ export const actions: Actions = {
         }).where(eq(users.id, form.data.id)).returning({ id: users.id});
         // make sure the user was updated
         if (updated.length === 0) {
-            return setError(form, '', 'User not found');
+            return setError(form, '', m.errorUserNotFound());
         }
-        const duration = Date.now() - start;
-        console.log(`update user took ${duration}ms`);
         // return the updated user
         return message(form, {
             text: 'User updated',
