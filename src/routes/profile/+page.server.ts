@@ -1,4 +1,4 @@
-import { sanitizeUser, db, type User, users, createGravatarURL, emailExists } from "$lib/server/db";
+import { sanitizeUser, db, users, emailExists } from "$lib/server/db";
 import { superValidate, setError, message } from "sveltekit-superforms";
 import type { PageServerLoad } from "./$types";
 import { zod } from "sveltekit-superforms/adapters";
