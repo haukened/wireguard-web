@@ -17,7 +17,7 @@ export const sessions = sqliteTable('sessions', {
 	id: text('id').primaryKey(),
 	userId: integer('user_id', {mode: 'number'})
 		.notNull()
-		.references(() => users.id),
+		.references(() => users.id, {onDelete: 'cascade'}),
 	expiresAt: integer('expires_at', {mode: 'timestamp'}).notNull(),
 });
 
@@ -25,7 +25,7 @@ export const registrations = sqliteTable('registrations', {
 	id: integer('id', {mode: 'number'}).primaryKey({autoIncrement: true}),
 	userId: integer('user_id', {mode: 'number'})
 		.notNull()
-		.references(() => users.id),
+		.references(() => users.id, {onDelete: 'cascade'}),
 	token: text('token').notNull(),
 	created_at: integer('created_at', {mode: 'timestamp'}).notNull().default(sql`(unixepoch())`),
 	consumed: integer('consumed', {mode: 'boolean'}).notNull().default(false),

@@ -2,13 +2,13 @@
 	import { superForm } from "sveltekit-superforms";
 	import { userFormSchema } from "./schema";
 	import { zodClient } from "sveltekit-superforms/adapters";
-	import type { ActionData, PageData } from "./$types";
+	import type { PageData } from "./$types";
 	import type { User } from "$lib/server/db";
     import { Button } from "$lib/components/ui/button";
     import { CircleCheckBig, CircleX, UserPlus, Ellipsis, Pencil, Trash } from "lucide-svelte";
     import { Input } from '$lib/components/ui/input';
+    import { page } from "$app/stores";
     import { toast } from "svelte-sonner";
-    import * as AlertDialog from "$lib/components/ui/alert-dialog";
     import * as Card from "$lib/components/ui/card";
     import * as Dialog from "$lib/components/ui/dialog";
     import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -21,45 +21,58 @@
 
     const form = superForm(data.form, {
         validators: zodClient(userFormSchema),
-        dataType: 'json'
+        dataType: 'json',
     });
 
     const { form: formData, enhance, errors, message } = form;
 
-    let deleteConfirmOpen = $state(false);
-    let deleteConfirmUser = $state(null as User | null);
-
     let dialogOpen = $state(false);
-    let dialogAction = $state("create" as "create" | "update");
+    let dialogAction = $state("create" as "create" | "update" | "delete" | "reg");
+    let regToken = $state(undefined as string | undefined);
 
-    const openDeleteConfirm = (user: User) => {
-        deleteConfirmUser = user;
-        deleteConfirmOpen = true;
+    const openUserDelete = (user: User) => {
+        dialogAction = "delete";
+        clearFormData();
+        formData.set(user);
+        dialogOpen = true;
     }
 
     const openUserEdit = (user: User) => {
         dialogAction = "update";
+        clearFormData();
         formData.set(user);
         dialogOpen = true;
     }
 
     const openUserCreate = () => {
         dialogAction = "create";
+        clearFormData();
+        dialogOpen = true;
+    }
+
+    const openRegDialog = (token: string) => {
+        dialogAction = "reg";
+        regToken = token;
+        dialogOpen = true;
+    }
+
+    const closeDialog = () => {
+        dialogOpen = false;
+    }
+
+    const clearFormData = () => {
         formData.set({
             firstname: "",
             lastname: "",
             email: "",
             id: undefined,
         });
-        dialogOpen = true;
     }
 
-    const handleSubmit = (e: MouseEvent) => {
-        e.preventDefault();
-        dialogOpen = false;
-        form.submit();
+    const clearRegToken = () => {
+        regToken = undefined;
     }
-    
+   
     const dateFormatter = new Intl.DateTimeFormat("en-US", {
         year: "numeric",
         month: "2-digit",
@@ -72,17 +85,22 @@
 
     $effect(() => {
         if ($errors._errors) {
+            closeDialog();
+            clearFormData();
+            clearRegToken();
             $errors._errors.forEach(error => {
                 toast.error(error);
             });
         }
         if ($message) {
             if ($message.text) {
+                closeDialog();
                 toast.success($message.text);
                 $message.text = undefined;
             }
             if ($message.token) {
-                toast.success($message.token);
+                closeDialog();
+                openRegDialog($message.token);
                 $message.token = undefined;
             }
         }
@@ -151,7 +169,7 @@
                                     <Pencil class="mr-2 size-4"/>
                                     {m.adminUserEdit()}
                                 </DropdownMenu.Item>
-                                <DropdownMenu.Item onclick={() => {openDeleteConfirm(user)}}>
+                                <DropdownMenu.Item onclick={() => {openUserDelete(user)}}>
                                     <Trash class="mr-2 size-4"/>
                                     {m.adminUserDelete()}
                                 </DropdownMenu.Item>
@@ -165,69 +183,49 @@
         </Table.Root>
     </Card.Content>
     <Card.Footer>
-        <!-- The alert doesn't have to be here, its just a decent place to put it
-        that makes the JSX happy and i don't have to use fragment or snippet  -->
-        <AlertDialog.Root 
-            bind:open={deleteConfirmOpen}
-            onOpenChange={(open) => {
-                if (!open) {
-                    deleteConfirmUser = null;
-                }
-            }}
-            >
-            <AlertDialog.Content>
-                <form
-                    method="POST"
-                    action="?/delete"
-                    onsubmit={() => {
-                        console.log("submitting delete form");
-                        deleteConfirmOpen = false;
-                    }}
-                    class="space-y-4"
-                >
-                <input required type="hidden" name="id" bind:value={deleteConfirmUser} />
-                <AlertDialog.Header class="space-y-4">
-                    <AlertDialog.Title>
-                        Are you absolutely sure?        
-                    </AlertDialog.Title>
-                    <AlertDialog.Description>
-                        This action cannot be undone. <br/>This will permanently delete the user <span class="font-bold text-red-700">{deleteConfirmUser?.email}</span>
-                    </AlertDialog.Description>
-                </AlertDialog.Header>
-                <AlertDialog.Footer>
-                    <AlertDialog.Cancel>
-                        Cancel
-                    </AlertDialog.Cancel>
-                    <Button type="submit" variant="destructive">Delete</Button>
-                </AlertDialog.Footer>
-                </form>
-            </AlertDialog.Content>
-        </AlertDialog.Root>
-        <!-- This is the user add/edit form-->
         <Dialog.Root
             bind:open={dialogOpen}
-            onOpenChange={(open) => {
-                if (!open) {
-                    formData.set({
-                        firstname: "",
-                        lastname: "",
-                        email: "",
-                        id: undefined,
-                    });
-                }
-            }}
         >
             <Dialog.Content>
                 <form
                     method="POST"
                     action="?/{dialogAction}"
                     use:enhance
-                    class="space-y-4" 
+                    class="space-y-4"
                 >
                     <input type="hidden" name="id" bind:value={$formData.id} />
+                    {#if dialogAction === "reg"}
+                    <Dialog.Header>
+                        <Dialog.Title class="capitalize">New User Registration</Dialog.Title>
+                        <Dialog.Description>
+                            <p>User <span class="capitalize">{$formData.firstname} {$formData.lastname} created successfully.</span></p>
+                            <p>Copy the token and send it to the user.</p>
+                        </Dialog.Description>
+                    </Dialog.Header>
+                    <Dialog.Footer>
+                        <Button onclick={() => {
+                            closeDialog();
+                            clearRegToken();
+                        }}>Close</Button>
+                    </Dialog.Footer>
+                    {:else if dialogAction === "delete"}
+                    <Dialog.Header class="space-y-4" id="user-info">
+                        <Dialog.Title class="capitalize">Delete User</Dialog.Title>
+                        <Dialog.Description>
+                            <p>User {$formData.email} will be deleted.</p>
+                            <p>Are you <span class="text-red-700 font-bold underline">ABSOLUTELY</span> sure? This action cannot be undone.</p>
+                        </Dialog.Description>
+                    </Dialog.Header>
+                    <input type="hidden" name="firstname" bind:value={$formData.firstname} />
+                    <input type="hidden" name="lastname" bind:value={$formData.lastname} />
+                    <input type="hidden" name="email" bind:value={$formData.email} />
+                    <Dialog.Footer>
+                        <Button type="submit" variant="destructive">Delete</Button>
+                    </Dialog.Footer>
+                    {:else}
                     <Dialog.Header>
                         <Dialog.Title class="capitalize">{dialogAction} User</Dialog.Title>
-                        <Dialog.Description>Form Description</Dialog.Description>
+                        <Dialog.Description>Description</Dialog.Description>
                     </Dialog.Header>
                     <Form.Field {form} name="firstname">
                         <Form.Control let:attrs>
@@ -256,8 +254,9 @@
                         <Form.FieldErrors/>
                     </Form.Field>
                     <Dialog.Footer>
-                        <Button type="submit" onclick={handleSubmit}>Save</Button>
+                        <Button type="submit">Save</Button>
                     </Dialog.Footer>
+                    {/if}
                 </form>
             </Dialog.Content>
         </Dialog.Root>

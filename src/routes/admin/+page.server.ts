@@ -37,13 +37,45 @@ export const actions: Actions = {
     delete: async (event) => {
         // server-side guard - check for user
         if (!event.locals.user) {
-            return 
+            return redirect(302, "/logout");
+        }
+        // validate the form
+        const form = await superValidate<Infer<UserFormSchema>,Message>(event, zod(userFormSchema));
+        if (!form.valid) {
+            return message(form, {
+                text: 'Unable to delete user',
+                token: undefined,
+            })
+        }
+        // ensure we have a user Id
+        if (!form.data.id) {
+            return setError(form, '', 'User ID is required');
+        }
+        if (event.locals.user.id === form.data.id) {
+            return setError(form, '', 'Don\'t delete yourself.');
+        }
+        // delete the user
+        try {
+            const deleted = await db.delete(users)
+                .where(eq(users.id, form.data.id))
+                .returning();
+            // make sure the user was deleted
+            if (deleted.length === 0) {
+                return setError(form, '', 'User not found');
+            }
+            return message(form, {
+                text: `User ${deleted[0].email} deleted`,
+                token: undefined,
+            });
+        } catch (e) {
+            console.log(e);
+            return setError(form, '', 'Error deleting user');
         }
     },
     create: async (event) => {
         // server-side guard - check for user
         if (!event.locals.user) {
-            return 
+            return redirect(302, "/logout");
         }
         // validate the form
         const form = await superValidate<Infer<UserFormSchema>,Message>(event, zod(userFormSchema));
@@ -87,9 +119,10 @@ export const actions: Actions = {
         });
     },
     update: async (event) => {
+        const start = Date.now();
         // server-side guard - check for user
         if (!event.locals.user) {
-            return 
+            return redirect(302, "/logout");
         }
         // validate the form
         const form = await superValidate<Infer<UserFormSchema>,Message>(event, zod(userFormSchema));
@@ -110,6 +143,8 @@ export const actions: Actions = {
         if (updated.length === 0) {
             return setError(form, '', 'User not found');
         }
+        const duration = Date.now() - start;
+        console.log(`update user took ${duration}ms`);
         // return the updated user
         return message(form, {
             text: 'User updated',
