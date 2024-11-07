@@ -140,11 +140,16 @@ export const actions: Actions = {
         if (!form.data.id) {
             return setError(form, '', m.errorUserIdRequired());
         }
+        // you cannot disable yourself
+        if (event.locals.user.id === form.data.id && form.data.disabled) {
+            return setError(form, '', m.errorDisableSelf());
+        }
         // update the user
         const updated: { id: number }[] = await db.update(users).set({
             firstname: form.data.firstname,
             lastname: form.data.lastname,
             email: form.data.email,
+            disabled: form.data.disabled,
         }).where(eq(users.id, form.data.id)).returning({ id: users.id});
         // make sure the user was updated
         if (updated.length === 0) {

@@ -33,6 +33,13 @@
     let disableRegCloseButton = $state(true);
     let actuallyDeleteCheckBox = $state(false);
     let disableDeleteButton = $derived(!actuallyDeleteCheckBox);
+    let userDisableClass = $derived.by(() => {
+        if (dialogAction === "update") {
+            return "visible";
+        } else {
+            return "invisible";
+        }
+    })
 
     let regToken = $state({
         value: "",
@@ -82,6 +89,7 @@
             lastname: "",
             email: "",
             id: undefined,
+            disabled: false,
         });
     }
 
@@ -123,7 +131,7 @@
             if ($message.token) {
                 closeDialog();
                 openRegDialog($message.token);
-                clearRegToken();
+                $message.token = undefined;
                 clearCheckbox();
             }
         }
@@ -300,7 +308,16 @@
                         </Form.Control>
                         <Form.FieldErrors/>
                     </Form.Field>
-                    <Dialog.Footer>
+                    <Dialog.Footer class="flex flex-row w-full !justify-between items-center space-x-2">
+                        <Form.Field {form} name="disabled" class={userDisableClass}>
+                            <Form.Control let:attrs>
+                                <div class="flex flex-row justify-start items-center space-x-2">
+                                    <Checkbox bind:checked={$formData.disabled} {...attrs}/>
+                                    <Form.Label>{m.adminUserDisable()}</Form.Label>
+                                </div>
+                            </Form.Control>
+                            <Form.FieldErrors/>
+                        </Form.Field>
                         <Button type="submit">{m._save()}</Button>
                     </Dialog.Footer>
                     {/if}
