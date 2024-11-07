@@ -7,11 +7,7 @@ import { v4 as uuid4 } from "uuid";
 import { zod } from "sveltekit-superforms/adapters";
 import * as m from '$lib/paraglide/messages';
 import type { Actions, PageServerLoad } from "./$types";
-
-type Message = {
-    text: string | undefined;
-    token: string | undefined;
-}
+import type { Message } from "./message";
 
 export const load: PageServerLoad = async (event) => {
     // set up the form
@@ -122,7 +118,12 @@ export const actions: Actions = {
         // return the created user and the registration token
         return message(form, {
             text: m.adminUserCreated({email: createdUser.email}),
-            token: regToken,
+            token: {
+                value: regToken,
+                email: createdUser.email,
+                firstname: createdUser.firstname,
+                lastname: createdUser.lastname,
+            }
         });
     },
     update: async (event) => {
@@ -151,7 +152,7 @@ export const actions: Actions = {
         }
         // return the updated user
         return message(form, {
-            text: 'User updated',
+            text: m.adminUserUpdated(),
             token: undefined,
         });
     }

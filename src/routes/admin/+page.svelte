@@ -5,9 +5,10 @@
 	import type { PageData } from "./$types";
 	import type { User } from "$lib/server/db";
     import { Button } from "$lib/components/ui/button";
+    import { Checkbox } from "$lib/components/ui/checkbox/index.js";
     import { CircleCheckBig, CircleX, UserPlus, Ellipsis, Pencil, Trash } from "lucide-svelte";
     import { Input } from '$lib/components/ui/input';
-    import { page } from "$app/stores";
+    import { Label } from "$lib/components/ui/label/index.js";
     import { toast } from "svelte-sonner";
     import * as Card from "$lib/components/ui/card";
     import * as Dialog from "$lib/components/ui/dialog";
@@ -16,6 +17,7 @@
     import * as m from "$lib/paraglide/messages";
     import * as Table from "$lib/components/ui/table";
     import * as Tooltip from "$lib/components/ui/tooltip";
+    import type { Token } from "./message";
 
     let { data }: { data: PageData } = $props();
 
@@ -28,7 +30,21 @@
 
     let dialogOpen = $state(false);
     let dialogAction = $state("create" as "create" | "update" | "delete" | "reg");
-    let regToken = $state(undefined as string | undefined);
+    let disableRegCloseButton = $state(true);
+    let actuallyDelete = $state(false);
+    let disableDeleteButton = $derived(!actuallyDelete);
+
+    let regToken = $state({
+        value: "",
+        firstname: "",
+        lastname: "",
+        email: "",
+    } as Token | undefined);
+
+    const generateRegistrationURL = (token: Token | undefined) => {
+        if (!token) return "";
+        return `${window.location.origin}/register/${token.value}`;
+    }
 
     const openUserDelete = (user: User) => {
         dialogAction = "delete";
@@ -50,7 +66,7 @@
         dialogOpen = true;
     }
 
-    const openRegDialog = (token: string) => {
+    const openRegDialog = (token: Token) => {
         dialogAction = "reg";
         regToken = token;
         dialogOpen = true;
@@ -101,7 +117,7 @@
             if ($message.token) {
                 closeDialog();
                 openRegDialog($message.token);
-                $message.token = undefined;
+                clearRegToken();
             }
         }
     });
@@ -185,6 +201,12 @@
     <Card.Footer>
         <Dialog.Root
             bind:open={dialogOpen}
+            onOpenChange={(open) => {
+                if (!open) {
+                    clearFormData();
+                    clearRegToken();
+                }
+            }}
         >
             <Dialog.Content>
                 <form
@@ -194,38 +216,56 @@
                     class="space-y-4"
                 >
                     <input type="hidden" name="id" bind:value={$formData.id} />
-                    {#if dialogAction === "reg"}
+                    {#if  regToken !== undefined && dialogAction === "reg"}
                     <Dialog.Header>
-                        <Dialog.Title class="capitalize">New User Registration</Dialog.Title>
-                        <Dialog.Description>
-                            <p>User <span class="capitalize">{$formData.firstname} {$formData.lastname} created successfully.</span></p>
-                            <p>Copy the token and send it to the user.</p>
+                        <Dialog.Title class="mb-2">{m.adminNewUser()} - <span class="capitalize">{regToken.firstname} {regToken.lastname}</span> &lt;<span class="lowercase">{regToken.email}</span>&gt;</Dialog.Title>
+                        <Dialog.Description class="space-y-1">
+                            <p class="font-bold dark:text-white">{m.adminNotShownAgain()}</p>
+                            <p>{m.adminNewUserDescription()}</p>
                         </Dialog.Description>
                     </Dialog.Header>
                     <Dialog.Footer>
-                        <Button onclick={() => {
-                            closeDialog();
-                            clearRegToken();
-                        }}>Close</Button>
+                        <div class="flex flex-row w-full justify-between">
+                            <div class="space-x-2">
+                                <Button variant="outline" onclick={() => {
+                                    navigator.clipboard.writeText(generateRegistrationURL(regToken)); 
+                                    toast.success(m.copiedToClipboard());
+                                    disableRegCloseButton = false;
+                                }}>{m.copyLink()}</Button>
+                                <Button variant="outline" 
+                                    href="mailto:{regToken.email}?subject={m.adminEmailSubject()}&body={m.adminEmailBody()}: {generateRegistrationURL(regToken)}"
+                                    onclick={() => {disableRegCloseButton = false;}}
+                                    >
+                                    {m.sendEmail()}
+                                </Button>
+                            </div>
+                            <Button disabled={disableRegCloseButton} onclick={() => {
+                                closeDialog();
+                                clearRegToken();
+                            }}>{m.close()}</Button>
+                        </div>
                     </Dialog.Footer>
                     {:else if dialogAction === "delete"}
-                    <Dialog.Header class="space-y-4" id="user-info">
-                        <Dialog.Title class="capitalize">Delete User</Dialog.Title>
-                        <Dialog.Description>
-                            <p>User {$formData.email} will be deleted.</p>
-                            <p>Are you <span class="text-red-700 font-bold underline">ABSOLUTELY</span> sure? This action cannot be undone.</p>
+                    <Dialog.Header class="space-y-2" id="user-info">
+                        <Dialog.Title class="capitalize mb-4">{m.adminUserDelete()}</Dialog.Title>
+                        <Dialog.Description class="space-y-2">
+                            <p>{m.adminUserDeleteDescription({ email: $formData.email})}</p>
+                            <p>{m.adminUserDeleteWarning()}</p>
                         </Dialog.Description>
                     </Dialog.Header>
                     <input type="hidden" name="firstname" bind:value={$formData.firstname} />
                     <input type="hidden" name="lastname" bind:value={$formData.lastname} />
                     <input type="hidden" name="email" bind:value={$formData.email} />
-                    <Dialog.Footer>
-                        <Button type="submit" variant="destructive">Delete</Button>
+                    <Dialog.Footer class="flex flex-row !justify-between">
+                        <div class="flex flex-row items-center space-x-2">
+                            <Checkbox id="actually-delete" bind:checked={actuallyDelete}/>
+                            <Label for="actually-delete">{m.adminConfirmDelete()}</Label>
+                        </div>
+                        <Button disabled={disableDeleteButton} type="submit" variant="destructive">{m._delete()}</Button>
                     </Dialog.Footer>
                     {:else}
                     <Dialog.Header>
-                        <Dialog.Title class="capitalize">{dialogAction} User</Dialog.Title>
-                        <Dialog.Description>Description</Dialog.Description>
+                        <Dialog.Title class="capitalize">{dialogAction} {m.users()}</Dialog.Title>
                     </Dialog.Header>
                     <Form.Field {form} name="firstname">
                         <Form.Control let:attrs>
@@ -254,7 +294,7 @@
                         <Form.FieldErrors/>
                     </Form.Field>
                     <Dialog.Footer>
-                        <Button type="submit">Save</Button>
+                        <Button type="submit">{m._save()}</Button>
                     </Dialog.Footer>
                     {/if}
                 </form>
