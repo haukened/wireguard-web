@@ -31,8 +31,8 @@
     let dialogOpen = $state(false);
     let dialogAction = $state("create" as "create" | "update" | "delete" | "reg");
     let disableRegCloseButton = $state(true);
-    let actuallyDelete = $state(false);
-    let disableDeleteButton = $derived(!actuallyDelete);
+    let actuallyDeleteCheckBox = $state(false);
+    let disableDeleteButton = $derived(!actuallyDeleteCheckBox);
 
     let regToken = $state({
         value: "",
@@ -88,6 +88,10 @@
     const clearRegToken = () => {
         regToken = undefined;
     }
+
+    const clearCheckbox = () => {
+        actuallyDeleteCheckBox = false;
+    }
    
     const dateFormatter = new Intl.DateTimeFormat("en-US", {
         year: "numeric",
@@ -104,6 +108,7 @@
             closeDialog();
             clearFormData();
             clearRegToken();
+            clearCheckbox();
             $errors._errors.forEach(error => {
                 toast.error(error);
             });
@@ -111,6 +116,7 @@
         if ($message) {
             if ($message.text) {
                 closeDialog();
+                clearCheckbox();
                 toast.success($message.text);
                 $message.text = undefined;
             }
@@ -118,6 +124,7 @@
                 closeDialog();
                 openRegDialog($message.token);
                 clearRegToken();
+                clearCheckbox();
             }
         }
     });
@@ -258,7 +265,7 @@
                     <input type="hidden" name="email" bind:value={$formData.email} />
                     <Dialog.Footer class="flex flex-row !justify-between">
                         <div class="flex flex-row items-center space-x-2">
-                            <Checkbox id="actually-delete" bind:checked={actuallyDelete}/>
+                            <Checkbox id="actually-delete" bind:checked={actuallyDeleteCheckBox}/>
                             <Label for="actually-delete">{m.adminConfirmDelete()}</Label>
                         </div>
                         <Button disabled={disableDeleteButton} type="submit" variant="destructive">{m._delete()}</Button>
